@@ -1,5 +1,5 @@
 # Ghost Deployment on AWS ECS - Alasco Task Stage Problem
-# Written and tested by Christian Hamp-Gattorna 24.09.2024
+### Written and tested by Christian Hamp-Gattorna 24.09.2024
 
 ## Prerequisites
 - Install Terraform
