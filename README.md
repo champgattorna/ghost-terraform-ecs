@@ -27,5 +27,5 @@
     After deployment, check the output for the Load Balancer URL. Visit that URL to access your Ghost blog.
 
 5. **CI/CD Pipeline**:
-    - When you open a pull request, tests will automatically run.
+    - Opening a pull request, will start the execution of the mock tests, which automatically "pass".
     - Once the PR is merged, the new application version will be deployed to ECS.
