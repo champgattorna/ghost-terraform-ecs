@@ -42,9 +42,18 @@ resource "aws_lb" "alasco-ghost_alb" {
   subnets            = module.vpc.public_subnets
 }
 
+# Target Group for ECS service
+resource "aws_lb_target_group" "alasco-ghost_tg" {
+  name     = "alasco-ghost-tg"
+  port     = 2368  # Ghost default port
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+  target_type = "instance"
+}
+
 # ECS Service
 resource "aws_ecs_service" "alasco-ghost_ecs_service" {
-  name = "ghost-service"
+  name = "alasco-ghost-service"
   cluster = aws_ecs_cluster.alasco-ghost_cluster.id
   task_definition = aws_ecs_task_definition.alasco-ghost_task_def.arn
   desired_count = 1
