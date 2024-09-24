@@ -1,0 +1,55 @@
+name: Ghost PoC - Alasco Task Stage
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+
+  # Runs mock tests as defined in the task stage packet
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        
+      #"Tests" are set to automatically pass
+      - name: Run mock tests
+        run: |
+          echo "Running some tests..."
+          echo "Running some more tests..."
+          echo "Just a couple more..."
+          echo "Test pass ✅"
+          exit 0
+
+  deploy:
+  
+    #Looks for a change in main, runs the test job before continuing
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        
+      #Configures AWS credentials needed for deploying Terraform to AWS
+      - name: AWS Credential setup
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
