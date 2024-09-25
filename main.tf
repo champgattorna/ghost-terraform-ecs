@@ -1,72 +1,74 @@
-provider "aws" {
-  region = "us-east-1"
-}
+#          ███    ███  █████  ██ ███    ██           
+#          ████  ████ ██   ██ ██ ████   ██           
+#█████     ██ ████ ██ ███████ ██ ██ ██  ██     █████ 
+#          ██  ██  ██ ██   ██ ██ ██  ██ ██           
+#          ██      ██ ██   ██ ██ ██   ████           
+                                                    
+# Written by Christian Hamp                                                   
+# Datum: 24.09.2024
 
-# VPC Definition
+# Fetch available availability zones
+data "aws_availability_zones" "available" {}
+
+# VPC Module
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "3.0"
-  name = "alasco-ghost-vpc"
-  cidr = "10.0.0.0/16"
-  public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
-  private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
+  source = "./modules/vpc"
+
+  name                = var.name
+  cidr_block          = var.vpc_cidr_block
+  public_subnets      = var.public_subnet_cidrs
+  availability_zones  = data.aws_availability_zones.available.names
 }
 
-# ECS Cluster
-resource "aws_ecs_cluster" "alasco-ghost_cluster" {
-  name = "alasco-ghost-ec2-cluster"
+# ECS Cluster Module
+module "ecs_cluster" {
+  source = "./modules/ecs_cluster"
+
+  name                    = var.name
+  vpc_id                  = module.vpc.vpc_id
+  subnet_ids              = module.vpc.public_subnet_ids
+  instance_type           = var.instance_type
+  desired_capacity        = var.ecs_desired_capacity
+  min_size                = var.ecs_min_size
+  max_size                = var.ecs_max_size
+  key_name                = var.key_name
+  capacity_provider_name  = module.autoscaling.capacity_provider_name
 }
 
-# Launch Configuration for EC2
-resource "aws_launch_configuration" "alasco-ecs_instance" {
-  image_id      = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  user_data     = <<EOF
-#!/bin/bash
-echo ECS_CLUSTER=${aws_ecs_cluster.alasco-ghost_cluster.name} >> /etc/ecs/ecs.config
-EOF
+# ALB Module
+module "alb" {
+  source = "./modules/alb"
+
+  name       = var.name
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.public_subnet_ids
 }
 
-# Auto Scaling Group for EC2 instances
-resource "aws_autoscaling_group" "alasco-ecs_asg" {
-  launch_configuration = aws_launch_configuration.ecs_instance.id
-  min_size = 1
-  max_size = 2
-  desired_capacity = 1
-  vpc_zone_identifier = module.vpc.public_subnets
+# ECS Service Module
+module "ecs_service" {
+  source = "./modules/ecs_service"
+
+  name                    = var.name
+  cluster_id              = module.ecs_cluster.cluster_id
+  subnet_ids              = module.vpc.public_subnet_ids
+  security_group_id       = module.ecs_cluster.security_group_id
+  desired_count           = var.ecs_service_desired_count
+  image                   = var.image
+  target_group_arn        = module.alb.target_group_arn
+  capacity_provider_name  = module.autoscaling.capacity_provider_name
 }
 
-# Application Load Balancer
-resource "aws_lb" "alasco-ghost_alb" {
-  load_balancer_type = "application"
-  subnets            = module.vpc.public_subnets
+# Autoscaling Module
+module "autoscaling" {
+  source = "./modules/autoscaling"
+
+  subnets            = module.vpc.public_subnet_ids
+  ecs_sg             = module.ecs_cluster.security_group_id
+  launch_template_id = module.ecs_cluster.launch_template_id
+  target_group_arn   = module.alb.target_group_arn
 }
 
-# Target Group for ECS service
-resource "aws_lb_target_group" "alasco-ghost_tg" {
-  name     = "alasco-ghost-tg"
-  port     = 2368  # Ghost default port
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
-  target_type = "instance"
-}
-
-# ECS Service
-resource "aws_ecs_service" "alasco-ghost_ecs_service" {
-  name = "alasco-ghost-service"
-  cluster = aws_ecs_cluster.alasco-ghost_cluster.id
-  task_definition = aws_ecs_task_definition.alasco-ghost_task_def.arn
-  desired_count = 1
-  launch_type = "EC2"
-}
-
-# ALB Listener
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.alasco-ghost_alb.arn
-  port = 80
-  protocol = "HTTP"
-  default_action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.alasco-ghost_tg.arn
-  }
+# Output the ALB DNS name
+output "alb_dns_name" {
+  value = module.alb.alb_dns_name
 }
