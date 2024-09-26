@@ -15,9 +15,12 @@ module "vpc" {
   source = "./modules/vpc"
 
   name                = var.name
+  security_group_id   = module.ecs_cluster.security_group_id
   cidr_block          = var.vpc_cidr_block
   public_subnets      = var.public_subnet_cidrs
+  subnet_ids          = module.vpc.public_subnet_ids
   availability_zones  = data.aws_availability_zones.available.names
+  region              = var.region
 }
 
 # ECS Cluster Module
@@ -32,7 +35,7 @@ module "ecs_cluster" {
   min_size                = var.ecs_min_size
   max_size                = var.ecs_max_size
   key_name                = var.key_name
-  capacity_provider_name  = module.autoscaling.capacity_provider_name
+  capacity_provider_name  = module.ecs_cluster.capacity_provider_name
 }
 
 # ALB Module
@@ -44,28 +47,34 @@ module "alb" {
   subnet_ids = module.vpc.public_subnet_ids
 }
 
+# EFS Module
+module "efs" {
+  source = "./modules/efs"
+
+  name                    = var.name
+  region                  = var.region
+  subnet_ids              = module.vpc.public_subnet_ids
+  security_group_id       = module.ecs_cluster.security_group_id
+  vpc_id                  = module.vpc.vpc_id
+
+}
+
 # ECS Service Module
 module "ecs_service" {
   source = "./modules/ecs_service"
 
   name                    = var.name
   cluster_id              = module.ecs_cluster.cluster_id
+  vpc_id                  = module.vpc.vpc_id
   subnet_ids              = module.vpc.public_subnet_ids
   security_group_id       = module.ecs_cluster.security_group_id
   desired_count           = var.ecs_service_desired_count
   image                   = var.image
   target_group_arn        = module.alb.target_group_arn
-  capacity_provider_name  = module.autoscaling.capacity_provider_name
-}
-
-# Autoscaling Module
-module "autoscaling" {
-  source = "./modules/autoscaling"
-
-  subnets            = module.vpc.public_subnet_ids
-  ecs_sg             = module.ecs_cluster.security_group_id
-  launch_template_id = module.ecs_cluster.launch_template_id
-  target_group_arn   = module.alb.target_group_arn
+  capacity_provider_name  = module.ecs_cluster.capacity_provider_name
+  execution_role_arn      = module.ecs_service.ecs_task_execution_role_arn
+  region                  = var.region
+  efs_id                  = module.efs.efs_id
 }
 
 # Output the ALB DNS name

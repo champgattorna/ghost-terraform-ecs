@@ -30,3 +30,21 @@ variable "availability_zones" {
   description = "List of availability zones"
   type        = list(string)
 }
+
+# Security Group ID for ECS tasks
+variable "security_group_id" {
+  description = "Security Group ID for ECS tasks"
+  type        = string
+}
+
+# AWS Region
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+# List of subnet IDs
+variable "subnet_ids" {
+  description = "List of subnet IDs"
+  type        = list(string)
+}

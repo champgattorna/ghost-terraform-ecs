@@ -24,7 +24,7 @@
     ```
 
 4. **Access the application**:
-    After deployment, check the output for the Load Balancer URL. Visit that URL to access your Ghost blog.
+    After deployment, check the output for the Load Balancer URL. Visit that URL to access your Ghost blog. Ensure to use HTTP instead of HTTPS.
 
 5. **CI/CD Pipeline**:
     - Opening a pull request, will start the execution of the mock tests, which automatically "pass".

@@ -22,8 +22,7 @@ output "security_group_id" {
   value = aws_security_group.alasco_sg.id
 }
 
-# Output Launch Template ID
-output "launch_template_id" {
-  description = "ID of the ECS launch template"
-  value       = aws_launch_template.ecs.id
+# Output for the Capacity Provider Name
+output "capacity_provider_name" {
+  value = aws_ecs_capacity_provider.alasco_capacity_providers.name
 }

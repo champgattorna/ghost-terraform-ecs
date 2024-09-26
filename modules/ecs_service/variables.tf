@@ -54,3 +54,34 @@ variable "capacity_provider_name" {
   description = "Name of the ECS capacity provider"
   type        = string
 }
+
+# Execution role ARN
+variable "execution_role_arn" {
+  description = "ARN of the IAM role that grants permissions for ECS tasks to make AWS API calls"
+  type        = string
+}
+
+# Task role ARN
+variable "task_role_arn" {
+  description = "ARN of the IAM role that grants permissions to the containers in the task"
+  type        = string
+  default     = null
+}
+
+# AWS Region
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+# VPC ID
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+# EFS ID
+variable "efs_id" {
+  description = "EFS ID"
+  type        = string
+}

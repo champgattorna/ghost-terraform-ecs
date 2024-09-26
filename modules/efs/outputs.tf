@@ -7,11 +7,17 @@
 # Written by Christian Hamp                                                   
 # Datum: 24.09.2024
                                                                                 
-output "asg_name" {
-  description = "Auto Scaling Group name for ECS instances"
-  value       = aws_autoscaling_group.ecs_asg.name
+# Output EFS Security Group
+output "efs_sg" {
+  value = aws_security_group.alasco_efs_sg.id
 }
 
-output "capacity_provider_name" {
-  value = aws_ecs_capacity_provider.alasco_capacity_provider.name
+# Output EFS DNS
+output "efs_dns" {
+  value = aws_efs_file_system.alasco_efs.dns_name
+}
+
+# Output EFS ID
+output "efs_id" {
+  value = aws_efs_file_system.alasco_efs.id
 }

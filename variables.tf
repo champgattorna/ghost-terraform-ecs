@@ -74,7 +74,7 @@ variable "ecs_max_size" {
 variable "ecs_service_desired_count" {
   description = "Desired number of ECS tasks"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 # Docker image to deploy
