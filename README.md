@@ -48,4 +48,4 @@
 
 4. **CI/CD Pipeline**:
     - Opening a pull request, will start the execution of the mock tests, which for the purpose of this task, will automatically "pass".
-    - Once the PR is merged, the new application version will be deployed to ECS.
+    - Once the PR is merged, the new application version will be deployed to ECS. Test
