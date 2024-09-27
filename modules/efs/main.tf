@@ -34,7 +34,7 @@ resource "aws_efs_file_system" "alasco_efs" {
   }
 }
 
-# Associate Firewall to our EFS
+# Associate Firewall to our EFS with Mount Point
 resource "aws_efs_mount_target" "a" {
   file_system_id = aws_efs_file_system.alasco_efs.id
   subnet_id      = var.subnet_ids[0]

@@ -13,6 +13,7 @@ resource "aws_security_group" "alasco_alb_sg" {
   description = "Security group for ALB"
   vpc_id      = var.vpc_id
 
+  # Access to HTTP from Load Balancer
   ingress {
     from_port   = 80
     to_port     = 80

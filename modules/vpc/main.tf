@@ -66,6 +66,7 @@ resource "aws_route_table_association" "public_subnets" {
   route_table_id = aws_route_table.public.id
 }
 
+# VPC Endpoint for EFS
 resource "aws_vpc_endpoint" "efs" {
   vpc_id            = aws_vpc.alasco_vpc.id
   service_name      = "com.amazonaws.${var.region}.elasticfilesystem"

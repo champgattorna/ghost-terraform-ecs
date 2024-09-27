@@ -23,6 +23,7 @@ data "aws_ami" "ecs_ami" {
   most_recent = true
 }
 
+# Create Launch Template for ECS EC2 Instances
 resource "aws_launch_template" "alasco_ecs_launch_template" {
   name_prefix   = "${var.name}-ecs-launch-template"
   image_id      = data.aws_ami.ecs_ami.id 
@@ -38,6 +39,7 @@ resource "aws_launch_template" "alasco_ecs_launch_template" {
     arn = aws_iam_instance_profile.profile.arn
   }
 
+  # Instance Storage
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
@@ -52,11 +54,13 @@ resource "aws_launch_template" "alasco_ecs_launch_template" {
         Name = "${var.name}-ecs-instance"
     }
   }
+  
+  # User data script for bootstrapping EC2 instance to ECS cluster
   user_data = filebase64("${path.module}/user_data.tpl")
 }
 
 
-
+# IAM Role for ECS task execution
 resource "aws_iam_role" "ecs_task_execution_role" {
   name                = "ecs-cluster-assoc"
   assume_role_policy  = data.aws_iam_policy_document.assume_policy.json
@@ -67,11 +71,13 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   ]
 }
 
+# Instance profile for role
 resource "aws_iam_instance_profile" "profile" {
   name = "alasco-ecs-cluster-profile"
   role = aws_iam_role.ecs_task_execution_role.name
 }
 
+# Policy Document to assume
 data "aws_iam_policy_document" "assume_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -82,6 +88,7 @@ data "aws_iam_policy_document" "assume_policy" {
   }
 }
 
+# Auto Scaling group, performs refresh on launch template change to ensure changes execute
 resource "aws_autoscaling_group" "alasco_asg" {
   name                 = "${var.name}-ecs-asg"
   desired_capacity     = var.desired_capacity
@@ -102,6 +109,7 @@ resource "aws_autoscaling_group" "alasco_asg" {
   vpc_zone_identifier = var.subnet_ids
 }
 
+# Capacity provider to attach to ECS cluster
 resource "aws_ecs_capacity_provider" "alasco_capacity_providers" {
   name = "alasco-ecs-asg"
 
@@ -120,6 +128,7 @@ resource "aws_ecs_capacity_provider" "alasco_capacity_providers" {
   }
 }
 
+# Attachment of capacity provider to ECS cluster
 resource "aws_ecs_cluster_capacity_providers" "alasco_cluster_capacity_providers" {
   cluster_name       = aws_ecs_cluster.alasco_ecs_cluster.name
   capacity_providers = [aws_ecs_capacity_provider.alasco_capacity_providers.name]
@@ -131,6 +140,7 @@ resource "aws_security_group" "alasco_sg" {
   description = "Security group for ECS instances"
   vpc_id      = var.vpc_id
 
+  # All TCP. Improvement to be made with more time...
   ingress {
     from_port   = 0
     to_port     = 65535
