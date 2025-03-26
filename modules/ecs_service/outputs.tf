@@ -9,12 +9,12 @@
                                                                                 
 # Output Service Name
 output "service_name" {
-  value = aws_ecs_service.alasco_service.name
+  value = aws_ecs_service.ghost_service.name
 }
 
 # Output Task Definition ARN
 output "task_definition_arn" {
-  value = aws_ecs_task_definition.alasco_taskdef.arn
+  value = aws_ecs_task_definition.ghost_taskdef.arn
 }
 
 # Output Execution Role ARN

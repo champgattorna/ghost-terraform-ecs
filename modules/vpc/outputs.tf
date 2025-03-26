@@ -9,7 +9,7 @@
 
 # Output VPC ID
 output "vpc_id" {
-  value = aws_vpc.alasco_vpc.id
+  value = aws_vpc.ghost_vpc.id
 }
 
 # Output Public Subnet IDs

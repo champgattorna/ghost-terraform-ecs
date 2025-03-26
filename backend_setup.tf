@@ -8,7 +8,7 @@
 # Datum: 24.09.2024                                                                 
 
 # Create S3 Bucket for Terraform State
-resource "aws_s3_bucket" "alasco_terraform_state" {
+resource "aws_s3_bucket" "ghost_terraform_state" {
   bucket = "${var.name}-terraform-bucket"
 
   tags = {
@@ -17,8 +17,8 @@ resource "aws_s3_bucket" "alasco_terraform_state" {
 }
 
 # Configure Bucket Versioning
-resource "aws_s3_bucket_versioning" "alasco_bucket_versioning" {
-  bucket = aws_s3_bucket.alasco_terraform_state.id
+resource "aws_s3_bucket_versioning" "ghost_bucket_versioning" {
+  bucket = aws_s3_bucket.ghost_terraform_state.id
 
   versioning_configuration {
     status = "Enabled"
@@ -26,8 +26,8 @@ resource "aws_s3_bucket_versioning" "alasco_bucket_versioning" {
 }
 
 # Configure Server-Side Encryption
-resource "aws_s3_bucket_server_side_encryption_configuration" "alasco_sse" {
-  bucket = aws_s3_bucket.alasco_terraform_state.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "ghost_sse" {
+  bucket = aws_s3_bucket.ghost_terraform_state.id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -37,7 +37,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "alasco_sse" {
 }
 
 # DynamoDB Table for State Locking
-resource "aws_dynamodb_table" "alasco_terraform_state_lock" {
+resource "aws_dynamodb_table" "ghost_terraform_state_lock" {
   name         = "${var.name}-terraform-state-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"

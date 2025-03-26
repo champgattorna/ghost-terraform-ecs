@@ -9,10 +9,10 @@
 
 terraform {
   backend "s3" {
-    bucket         = "alasco-task-terraform-bucket"
+    bucket         = "ghost-task-terraform-bucket"
     key            = "global/s3/terraform.tfstate"
     region         = "us-east-2"
-    dynamodb_table = "alasco-task-terraform-state-lock"
+    dynamodb_table = "ghost-task-terraform-state-lock"
     encrypt        = true
   }
 }

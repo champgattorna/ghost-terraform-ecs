@@ -1,4 +1,4 @@
-# Ghost Deployment on AWS ECS - Alasco Task Stage Problem
+# Ghost Deployment on AWS ECS Using Terraform and CI/CD with Github Actions
 ### Written and tested by Christian Hamp-Gattorna 24.09.2024
 
 ## Prerequisites

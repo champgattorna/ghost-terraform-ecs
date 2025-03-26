@@ -11,7 +11,7 @@
 variable "name" {
   description = "Name prefix for resources"
   type        = string
-  default     = "alasco-task"
+  default     = "ghost-task"
 }
 
 # AWS region

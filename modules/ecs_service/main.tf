@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "ecs_task_execution_role_assume_role_policy" {
 }
 
 # Policy for Cloudwatch Logs
-resource "aws_iam_policy" "alasco_ecs_task_execution_logging" {
+resource "aws_iam_policy" "ghost_ecs_task_execution_logging" {
   name        = "${var.name}-ecs-task-execution-logging"
   description = "Allows ECS tasks to create log streams and put log events"
 
@@ -55,18 +55,18 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 # Attach logging policies to role
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_logging" {
   role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = aws_iam_policy.alasco_ecs_task_execution_logging.arn
+  policy_arn = aws_iam_policy.ghost_ecs_task_execution_logging.arn
 }
 
 
 # Create Cloudwatch Log Group
-resource "aws_cloudwatch_log_group" "alasco_ecs_task_log_group" {
+resource "aws_cloudwatch_log_group" "ghost_ecs_task_log_group" {
   name              = "/ecs/${var.name}-logs"
   retention_in_days = 7
 }
 
 # Task Definition
-resource "aws_ecs_task_definition" "alasco_taskdef" {
+resource "aws_ecs_task_definition" "ghost_taskdef" {
   family                   = "${var.name}-task"
   network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
@@ -103,9 +103,9 @@ resource "aws_ecs_task_definition" "alasco_taskdef" {
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "/ecs/alasco-task-logs",
+        "awslogs-group": "/ecs/ghost-task-logs",
         "awslogs-region": "us-east-2",
-        "awslogs-stream-prefix": "alasco-task"
+        "awslogs-stream-prefix": "ghost-task"
       }
     }
   }
@@ -125,10 +125,10 @@ resource "aws_ecs_task_definition" "alasco_taskdef" {
 }
 
 # ECS Service
-resource "aws_ecs_service" "alasco_service" {
+resource "aws_ecs_service" "ghost_service" {
   name            = "${var.name}-service"
   cluster         = var.cluster_id
-  task_definition = aws_ecs_task_definition.alasco_taskdef.arn
+  task_definition = aws_ecs_task_definition.ghost_taskdef.arn
   desired_count   = var.desired_count
   launch_type     = "EC2"
 
@@ -141,7 +141,7 @@ resource "aws_ecs_service" "alasco_service" {
     container_port   = 2368
   }
 
-  depends_on = [aws_ecs_task_definition.alasco_taskdef]
+  depends_on = [aws_ecs_task_definition.ghost_taskdef]
 
   tags = {
     Name = "${var.name}-service"

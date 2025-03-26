@@ -8,8 +8,8 @@
 # Datum: 24.09.2024
 
 # Create ECS Cluster
-resource "aws_ecs_cluster" "alasco_ecs_cluster" {
-  name      = "alasco-ecs-cluster"
+resource "aws_ecs_cluster" "ghost_ecs_cluster" {
+  name      = "ghost-ecs-cluster"
 }
 
 # Fetch the latest ECS-optimized AMI
@@ -24,13 +24,13 @@ data "aws_ami" "ecs_ami" {
 }
 
 # Create Launch Template for ECS EC2 Instances
-resource "aws_launch_template" "alasco_ecs_launch_template" {
+resource "aws_launch_template" "ghost_ecs_launch_template" {
   name_prefix   = "${var.name}-ecs-launch-template"
   image_id      = data.aws_ami.ecs_ami.id 
   instance_type = var.instance_type
   
   network_interfaces {
-    security_groups = [aws_security_group.alasco_sg.id]
+    security_groups = [aws_security_group.ghost_sg.id]
   }
 
   key_name = var.key_name
@@ -73,7 +73,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 
 # Instance profile for role
 resource "aws_iam_instance_profile" "profile" {
-  name = "alasco-ecs-cluster-profile"
+  name = "ghost-ecs-cluster-profile"
   role = aws_iam_role.ecs_task_execution_role.name
 }
 
@@ -89,7 +89,7 @@ data "aws_iam_policy_document" "assume_policy" {
 }
 
 # Auto Scaling group, performs refresh on launch template change to ensure changes execute
-resource "aws_autoscaling_group" "alasco_asg" {
+resource "aws_autoscaling_group" "ghost_asg" {
   name                 = "${var.name}-ecs-asg"
   desired_capacity     = var.desired_capacity
   min_size             = var.min_size
@@ -103,18 +103,18 @@ resource "aws_autoscaling_group" "alasco_asg" {
     triggers = ["launch_template"]
   }
   launch_template {
-    id      = aws_launch_template.alasco_ecs_launch_template.id
+    id      = aws_launch_template.ghost_ecs_launch_template.id
     version = "$Latest"
   }
   vpc_zone_identifier = var.subnet_ids
 }
 
 # Capacity provider to attach to ECS cluster
-resource "aws_ecs_capacity_provider" "alasco_capacity_providers" {
-  name = "alasco-ecs-asg"
+resource "aws_ecs_capacity_provider" "ghost_capacity_providers" {
+  name = "ghost-ecs-asg"
 
   auto_scaling_group_provider {
-    auto_scaling_group_arn         = aws_autoscaling_group.alasco_asg.arn
+    auto_scaling_group_arn         = aws_autoscaling_group.ghost_asg.arn
     managed_termination_protection = "DISABLED"
     managed_draining               = "DISABLED"
 
@@ -129,13 +129,13 @@ resource "aws_ecs_capacity_provider" "alasco_capacity_providers" {
 }
 
 # Attachment of capacity provider to ECS cluster
-resource "aws_ecs_cluster_capacity_providers" "alasco_cluster_capacity_providers" {
-  cluster_name       = aws_ecs_cluster.alasco_ecs_cluster.name
-  capacity_providers = [aws_ecs_capacity_provider.alasco_capacity_providers.name]
+resource "aws_ecs_cluster_capacity_providers" "ghost_cluster_capacity_providers" {
+  cluster_name       = aws_ecs_cluster.ghost_ecs_cluster.name
+  capacity_providers = [aws_ecs_capacity_provider.ghost_capacity_providers.name]
 }
 
 # Security Group for ECS Instances
-resource "aws_security_group" "alasco_sg" {
+resource "aws_security_group" "ghost_sg" {
   name        = "${var.name}-ecs-instances-sg"
   description = "Security group for ECS instances"
   vpc_id      = var.vpc_id

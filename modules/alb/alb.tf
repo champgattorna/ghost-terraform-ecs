@@ -8,7 +8,7 @@
 # Datum: 24.09.2024
 
 # Security Group for ALB
-resource "aws_security_group" "alasco_alb_sg" {
+resource "aws_security_group" "ghost_alb_sg" {
   name        = "${var.name}-alb-sg"
   description = "Security group for ALB"
   vpc_id      = var.vpc_id
@@ -34,10 +34,10 @@ resource "aws_security_group" "alasco_alb_sg" {
 }
 
 # Create ALB
-resource "aws_lb" "alasco_alb" {
+resource "aws_lb" "ghost_alb" {
   name               = "${var.name}-alb"
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alasco_alb_sg.id]
+  security_groups    = [aws_security_group.ghost_alb_sg.id]
   subnets            = var.subnet_ids
 
   tags = {
@@ -46,7 +46,7 @@ resource "aws_lb" "alasco_alb" {
 }
 
 # Create Target Group
-resource "aws_lb_target_group" "alasco_tg" {
+resource "aws_lb_target_group" "ghost_tg" {
   name        = "${var.name}-target-group"
   port        = 80
   protocol    = "HTTP"
@@ -70,12 +70,12 @@ resource "aws_lb_target_group" "alasco_tg" {
 
 # Create Listener
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.alasco_alb.arn
+  load_balancer_arn = aws_lb.ghost_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.alasco_tg.arn
+    target_group_arn = aws_lb_target_group.ghost_tg.arn
   }
 }

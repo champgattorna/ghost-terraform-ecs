@@ -1,4 +1,4 @@
-name: Ghost PoC - Alasco Task Stage
+name: Ghost Terraform PoC
 
 on:
   pull_request:
